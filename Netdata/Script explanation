@@ -1,0 +1,88 @@
+## `setup.sh` — Install Netdata
+
+automatically install Netdata on a fresh Linux system, including optional firewall configuration.
+
+-------------------------------------------------------------------------------------------------------
+bash <(curl -Ss https://my-netdata.io/kickstart.sh) --dont-wait
+
+
+Downloads and executes Netdata’s official installation script.
+The `--dont-wait` flag avoids waiting for user input during the install process.
+
+-----------------------------------------------------------------------------------------------------
+if command -v ufw &>/dev/null; then
+    sudo ufw allow 19999/tcp
+fi
+
+
+Checks if the `ufw` firewall is installed. If so, it allows traffic on port **19999**, which is used by Netdata's web dashboard.
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+
+echo "Netdata installed. Access it at http://$(hostname -I | awk '{print $1}'):19999"
+
+Prints the local IP address where the Netdata dashboard can be accessed in a browser.
+-----------------------------------------------------------------------------------------------
+
+`test_dashboard.sh` — Load Generator for Monitoring Test
+
+Simulate CPU, memory, and disk usage so you can **see live data on the Netdata dashboard** and verify that it's working.
+
+--------------------------------------------------------------------------------------------------------------------------
+### CPU Load
+
+stress --cpu 2 --timeout 30 &
+
+Uses `stress` to create CPU load on 2 cores for 30 seconds. The `&` runs it in the background.
+
+---------------------------------------------------------------------------------------------------------------------------
+
+### Memory Load
+
+stress --vm 1 --vm-bytes 256M --timeout 30 &
+
+Creates a memory load by allocating 256 MB of memory for 30 seconds using one virtual memory worker.
+--------------------------------------------------------------------------------------------------------------------------
+
+### Disk I/O Load
+
+dd if=/dev/zero of=tempfile bs=1M count=100 oflag=dsync &
+
+Generates disk I/O by writing 100 MB of zero bytes to a file (`tempfile`) using the `dd` command.
+------------------------------------------------------------------------------------------------------------------------------
+
+### Final Steps
+
+wait
+
+Waits for all background load processes to complete.
+-------------------------------------------------------------------------
+
+
+rm -f tempfile
+-----------------------------------------------------------------------------
+Cleans up the disk test file.
+------------------------------------------------------------------------------
+
+>  Note: You must install `stress` first:
+
+sudo apt install stress
+----------------------------------------------------------------------------------------------------
+
+
+## `cleanup.sh` — Uninstall Netdata
+
+completely remove Netdata** and clean up related files.
+
+sudo /opt/netdata/usr/lib/netdata/uninstall.sh --force
+
+Runs Netdata's own uninstall script with the `--force` flag to remove it non-interactively.
+-----------------------------------------------------------------------------------------------------------
+
+
+sudo rm -rf /etc/netdata
+sudo rm -rf /opt/netdata
+sudo rm -rf /var/lib/netdata
+
+Manually removes leftover configuration, install, and data directories in case the uninstall script didn’t remove everything.
+---------------------------------------------------------------------------------------------------------------------------------
