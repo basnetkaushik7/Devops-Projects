@@ -9,7 +9,7 @@ Project URL 3:
 https://roadmap.sh/projects/nginx-log-analyser
 
 Project URL 4:
-Project URL : https://roadmap.sh/projects/ssh-remote-server-setup
+https://roadmap.sh/projects/ssh-remote-server-setup
 
 Project URL 5:
 https://roadmap.sh/projects/static-site-server
