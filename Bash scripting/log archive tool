@@ -1,0 +1,22 @@
+#!/bin/bash
+
+Dest_dir="/var/logs/archives"
+TIMESTAMP=$(date '+%Y_%m_%d %H:%M:%S')
+
+mkdir -p "$Dest_dir"
+
+tar -czf "/var/log/archives/logs_$TIMESTAMP.tar.gz" -C /var/log .
+
+echo -e "\nLogs are archived in $Dest_dir at $TIMESTAMP
+
+###########################################################################################
+
+NOTE:
+MAKE IT EXECUTABLE:
+chmod +x log_archive.sh
+
+TO VIEW THE LOGS:
+tar -tzf /var/log/archives/logs_20230610_153022.tar.gz
+
+PROJECT FROM:
+https://roadmap.sh/projects/log-archive-tool
