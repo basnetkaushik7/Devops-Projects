@@ -1,0 +1,135 @@
+# SSH Key-Based Access Setup on AWS EC2  
+
+This project demonstrates how to set up a remote Linux server (AWS EC2) with **Two separate SSH key pairs**, configure access for both, and simplify SSH connections using ~/.ssh/config.
+
+## Objectives
+
+* Set up a remote Linux server (EC2)
+* Generate **two separate SSH key pairs**
+* Upload both keys to the server
+* Connect to the server using either key
+* Configure ~/.ssh/config for quick access
+* Install and configure fail2ban to prevent brute-force SSH attacks
+
+
+##  1. Provision an AWS EC2 Instance
+
+1. Go to the AWS EC2 console
+2. Launch a new instance using:
+3. Configure a security group to allow:
+     Port **22 (SSH)** from your IP
+     
+4. Select an existing key pair (.pem) for initial access
+
+5. Note the **Public IPv4 address** of the instance.
+
+
+## 2. Generate Two SSH Key Pairs
+
+On your local machine:
+
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_user1 
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/id_rsa_user2 
+
+
+You now have:
+
+ ~/.ssh/id_rsa_user1 and ~/.ssh/id_rsa_user1.pub
+ ~/.ssh/id_rsa_user2 and ~/.ssh/id_rsa_user2.pub
+
+
+## 3. Upload SSH Public Keys to EC2
+
+1. SSH into the EC2 instance using your AWS .pem key:
+
+ssh -i ~/Downloads/aws-key.pem ubuntu@<your-ec2-public-ip>   (Before connecting, make sure the .pem key is not too open i.e give chmod 600 to the .pem keyfile)
+
+
+2. Add your new keys:
+
+mkdir -p ~/.ssh
+chmod 700 ~/.ssh
+nano ~/.ssh/authorized_keys
+
+3. From your local machine (Open another Terminal), copy the contents of each .pub file and paste them into authorized_keys (one per line):
+
+cat ~/.ssh/id_rsa_user1.pub
+cat ~/.ssh/id_rsa_user2.pub
+
+4. Set proper permissions:
+
+chmod 600 ~/.ssh/authorized_keys
+
+
+## 4. Test SSH Access with Both Keys
+
+Try connecting from your local machine:
+
+ssh -i ~/.ssh/id_rsa_user1 ubuntu@<your-ec2-public-ip>
+ssh -i ~/.ssh/id_rsa_user2 ubuntu@<your-ec2-public-ip>
+
+## 5. Setup ~/.ssh/config for Easy Aliased Access
+
+On your local machine, edit the SSH config file:
+
+nano ~/.ssh/config
+
+Add:
+
+Host aws-user1
+  HostName <your-ec2-public-ip>
+  User ubuntu
+  IdentityFile ~/.ssh/id_rsa_user1
+
+Host aws-user2
+  HostName <your-ec2-public-ip>
+  User ubuntu
+  IdentityFile ~/.ssh/id_rsa_user2
+
+Now, connect using:
+
+ssh aws-user1
+ssh aws-user2
+
+
+##  Stretch Goal: Setup Fail2ban
+
+1. SSH into your EC2 instance:
+
+ssh aws-user1
+
+2. Install fail2ban:
+
+sudo apt update
+sudo apt install fail2ban -y
+
+3. Copy and edit config:
+
+sudo cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+sudo nano /etc/fail2ban/jail.local
+
+4. Enable the [sshd] section:
+
+[sshd]
+enabled = true
+port = ssh
+logpath = /var/log/auth.log
+maxretry = 5
+bantime = 3600
+
+5. Restart the service:
+
+sudo systemctl restart fail2ban
+sudo systemctl enable fail2ban
+
+
+6. Check status:
+
+sudo fail2ban-client status
+sudo fail2ban-client status sshd
+
+## Project Outcome
+
+ SSH access verified using both id_rsa_user1 and id_rsa_user2
+ Configured ~/.ssh/config for shortcut commands (alias)
+ Protected server from brute-force attempts using fail2ban
