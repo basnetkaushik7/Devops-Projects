@@ -1,0 +1,38 @@
+#!/bin/bash
+
+logfile="/path/to/nginx-access.log"
+
+######## CHECK IF THE LOG FILE IS PRESENT  ################
+
+if [[ ! -f "$logfile" ]]; then
+	echo "Log file '$logfile' not found"
+	exit 1
+fi
+
+
+############### TOP 5 IP ADDRESSES  ########################
+
+echo "Top % IP addresses"
+
+awk '{print $1}' $logfile | sort | uniq -c | sort -nr | head -n 5
+
+
+##############  TOP 5 MOST REQUESTED  #####################
+
+echo "Top 5 Most Requested Paths"
+
+awk '{print $7}' $logfile | sort | uniq -c | sort -nr | head -n 5
+
+
+################  TOP 5 RESPONSE STATUS CODE  ######################
+
+echo "Top 5 Response Status Code"
+
+awk '{print $9}' $logfile | sort | uniq -c | sort -nr | head -5
+
+
+###############  TOP 5 USER AGENTS  ############################
+
+echo "Top 5 User Agents"
+
+awk -F\" '{print $6}' $logfile | sort | uniq -c | sort -nr | head -n 5
