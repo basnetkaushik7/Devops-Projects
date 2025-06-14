@@ -1,0 +1,171 @@
+# Static Site Deployment on AWS EC2 with Nginx
+
+## 1. Register and Setup EC2 Instance
+
+- Created an EC2 instance (Ubuntu) on AWS.
+- Generated SSH key pair (`.pem` file) and configured SSH access.
+- Assigned a public IPv4 address (Elastic IP recommended to keep IP static).
+- Configured Security Group inbound rules to allow:
+  - SSH (port 22) from your IP.
+  - HTTP (port 80) from anywhere (`0.0.0.0/0`).
+
+
+## 2. Connect to EC2 Instance via SSH
+
+ssh -i ~/.ssh/your-key.pem ubuntu@<your-ec2-public-ip>
+
+
+## 3. Install and Configure Nginx
+
+sudo apt update
+sudo apt install nginx -y
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+
+## 4. Prepare Directory for Static Site
+
+sudo mkdir -p /var/www/html/static-site
+sudo chown -R ubuntu:ubuntu /var/www/html/static-site
+
+
+## 5. Configure Nginx to Serve Static Site
+
+Edit Nginx default site configuration:
+
+sudo nano /etc/nginx/sites-available/default
+
+
+Replace or update the `server` block to:
+
+```nginx
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    root /var/www/html/static-site;
+    index index.html;
+
+    server_name _;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+}
+
+
+Test and reload Nginx:
+
+sudo nginx -t
+sudo systemctl reload nginx
+
+
+## 6. Prepare Local Static Website Files
+
+folder structure:
+
+website/
+├── index.html
+├── style.css
+├── images/
+└── deploy.sh
+
+## 7. Create Deployment Script (`deploy.sh`)
+
+#!/bin/bash
+
+# Variables - update these with your own details
+KEY_PATH=~/.ssh/your-key.pem
+REMOTE_USER=ubuntu
+REMOTE_HOST=<your-ec2-public-ip>
+REMOTE_DIR=/var/www/html/static-site
+
+# Rsync command to deploy the site excluding deploy.sh itself
+rsync -avz --exclude 'deploy.sh' -e "ssh -i $KEY_PATH" ./ $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR
+
+
+Make script executable:
+
+chmod +x deploy.sh
+
+## 8. Deploy Static Site
+
+Run deployment script **from inside your website folder**:
+
+./deploy.sh
+
+
+## 9. Troubleshooting
+
+### Site does not load in browser but `curl localhost` works on EC2
+
+* Check EC2 **Security Group** allows inbound HTTP (port 80) traffic.
+* Confirm Nginx is running and listening on port 80 on all interfaces:
+
+
+sudo netstat -tulnp | grep nginx
+
+
+Expected output includes:
+
+0.0.0.0:80
+:::80
+
+
+* Check that the EC2 public IP is correct:
+
+curl http://checkip.amazonaws.com/
+
+
+* Clear browser cache or try different browsers.
+
+
+### `deploy.sh` uploads unwanted files (like itself)
+
+* Use `--exclude 'deploy.sh'` option in the `rsync` command.
+* For multiple exclusions, use multiple `--exclude` options or a `.rsync-exclude` file.
+
+
+### Permission Denied Errors with SSH
+
+* Ensure correct private key permissions (`chmod 400 your-key.pem`).
+* Use the `-i` option with SSH and `rsync` commands to specify the key.
+* Use `ubuntu` as remote user for Ubuntu EC2 instances.
+
+
+### Running `deploy.sh` from wrong directory uploads wrong files
+
+* Always run `deploy.sh` from your **website project folder**.
+* Alternatively, modify the script to use the script directory as source.
+
+Example:
+
+rsync -avz -e "ssh -i $KEY_PATH" "$(dirname "$0")/" $REMOTE_USER@$REMOTE_HOST:$REMOTE_DIR
+
+
+### Fixing file permissions on the server
+
+If you get permission errors serving files:
+
+
+sudo chown -R www-data:www-data /var/www/html/static-site
+sudo chmod -R 755 /var/www/html/static-site
+sudo systemctl reload nginx
+
+
+## 10. Verify Deployment
+
+Open your browser and visit:
+
+
+http://<your-ec2-public-ip>/
+
+
+# Summary
+
+* EC2 instance setup and SSH access configured.
+* Nginx installed and configured to serve a static site.
+* Deployment automated via `rsync` in `deploy.sh`.
+* Common issues like permissions, wrong folder deploy, and network settings solved.
+* Browser caching issues confirmed as a common cause of “site not loading.”
+
