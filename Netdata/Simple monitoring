@@ -1,0 +1,131 @@
+### `setup.sh`
+
+#!/bin/bash
+
+echo "Installing Netdata..."
+
+# Update system
+sudo apt update -y && sudo apt upgrade -y
+
+# Install Netdata
+wget -O kickstart.sh https://my-netdata.io/kickstart.sh
+
+# Allow Netdata port in firewall (ufw example)
+if command -v ufw &>/dev/null; then
+    sudo ufw allow 19999/tcp
+fi
+
+echo " Netdata installed. Access it at http://$(hostname -I | awk '{print $1}'):19999"
+--------------------------------------------------------------------------------------------------------------------
+
+### `test_dashboard.sh`
+
+#!/bin/bash
+
+echo "Generating CPU, Memory and Disk I/O load..."
+
+# CPU load
+echo "Stressing CPU..."
+stress --cpu 2 --timeout 30 &
+
+# Memory load
+echo "Allocating memory..."
+stress --vm 1 --vm-bytes 256M --timeout 30 &
+
+# Disk I/O
+echo "Running disk write test..."
+dd if=/dev/zero of=tempfile bs=1M count=100 oflag=dsync &
+
+# Wait for all background tasks to finish
+wait
+
+# Clean up test file
+rm -f tempfile
+
+echo "Load test completed. Check your Netdata dashboard!"
+--------------------------------------------------------------------------------------------------------------------------
+
+> **Note:** You need to install `stress` before running this script:
+> `sudo apt install stress`
+---------------------------------------------------------------------------------
+
+### `cleanup.sh`
+
+#!/bin/bash
+
+echo "Removing Netdata..."
+
+# Run uninstall script (if exists)
+if [ -f /opt/netdata/usr/lib/netdata/uninstall.sh ]; then
+    sudo /opt/netdata/usr/lib/netdata/uninstall.sh --force
+fi
+
+# Remove leftover directories
+sudo rm -rf /etc/netdata
+sudo rm -rf /opt/netdata
+sudo rm -rf /var/lib/netdata
+
+echo "Netdata and its files have been removed."
+-----------------------------------------------------------------------------------------------------------------------------
+
+
+## Scripts
+
+### 1. `setup.sh`
+
+Installs Netdata and opens firewall port 19999 for dashboard access.
+After installation, access the dashboard at:
+
+http://<your-server-ip>:19999/
+or
+http://localhost:19999
+
+
+### 2. `test_dashboard.sh`
+
+Generates CPU, memory, and disk I/O load to test if Netdata monitoring works.
+
+
+### 3. `cleanup.sh`
+
+Completely removes Netdata and related files from the system.
+
+
+
+## Customize Netdata Alerts (Example: CPU Usage Alert)
+
+1. Copy default CPU health alert config:
+
+sudo cp /opt/netdata/usr/lib/netdata/conf.d/health.d/cpu.conf /opt/netdata/etc/netdata/health.d/cpu.local.conf
+
+
+2. Edit `cpu.local.conf` to adjust alert thresholds:
+
+sudo nano /opt/netdata/etc/netdata/health.d/cpu.local.conf
+ 
+ THEN ADD:
+
+alarm: high_cpu_usage
+on: system.cpu
+lookup: average -1m percentage of user
+units: %
+every: 10s
+warn: $this > 80
+crit: $this > 90
+info: CPU usage above 80%
+to: sysadmin
+
+INDENTATION SHOULD BE SAME
+
+3. Restart Netdata to apply changes:
+
+sudo pkill netdata && sudo /opt/netdata/bin/netdata
+
+--------------------------------------------------------------------------------------------------
+
+## Notes
+
+* Netdata listens on port **19999** by default.
+* Firewall rules must allow traffic to this port.
+* The installer installs Netdata under `/opt/netdata/` by default.
+* Configuration files are under `/opt/netdata/etc/netdata/`.
