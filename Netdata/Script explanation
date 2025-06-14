@@ -1,22 +1,20 @@
 ## `setup.sh` — Install Netdata
 
 automatically install Netdata on a fresh Linux system, including optional firewall configuration.
-
 -------------------------------------------------------------------------------------------------------
-bash <(curl -Ss https://my-netdata.io/kickstart.sh) --dont-wait
+
+wget -O kickstart.sh https://my-netdata.io/kickstart.sh
 
 
-Downloads and executes Netdata’s official installation script.
-The `--dont-wait` flag avoids waiting for user input during the install process.
-
+Downloads Netdata’s official installation script.
 -----------------------------------------------------------------------------------------------------
+
 if command -v ufw &>/dev/null; then
     sudo ufw allow 19999/tcp
 fi
 
 
 Checks if the `ufw` firewall is installed. If so, it allows traffic on port **19999**, which is used by Netdata's web dashboard.
-
 -------------------------------------------------------------------------------------------------------------------------------------------
 
 echo "Netdata installed. Access it at http://$(hostname -I | awk '{print $1}'):19999"
@@ -27,14 +25,13 @@ Prints the local IP address where the Netdata dashboard can be accessed in a bro
 `test_dashboard.sh` — Load Generator for Monitoring Test
 
 Simulate CPU, memory, and disk usage so you can **see live data on the Netdata dashboard** and verify that it's working.
-
 --------------------------------------------------------------------------------------------------------------------------
+
 ### CPU Load
 
 stress --cpu 2 --timeout 30 &
 
 Uses `stress` to create CPU load on 2 cores for 30 seconds. The `&` runs it in the background.
-
 ---------------------------------------------------------------------------------------------------------------------------
 
 ### Memory Load
@@ -58,9 +55,8 @@ wait
 Waits for all background load processes to complete.
 -------------------------------------------------------------------------
 
-
 rm -f tempfile
------------------------------------------------------------------------------
+
 Cleans up the disk test file.
 ------------------------------------------------------------------------------
 
