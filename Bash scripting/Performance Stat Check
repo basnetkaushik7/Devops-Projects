@@ -1,0 +1,21 @@
+#!/bin/bash
+
+echo -e "\nCPU Usage:"
+top -bn1 | grep "Cpu(s)" | awk '{print "Total: " 100-$8"%"}'
+
+echo -e "\nMemory Usage:"
+free -m | awk 'NR==2{printf "Total: %sMB, Used: %sMB (%.1f%%), Free: %sMB (%.1f%%)\n", $2,$3,$3/$2*100,$4,$4/$2*100}'
+
+echo -e "\nDisk Usage:"
+df -h / | awk 'NR==2{print sprintf("Total: %s, Used: %s (%s), Free: %s", $2, $3, $5, $4}'
+
+
+echo -e "\nTop 5 CPU Processes:"
+ps -e --format=pid,cmd,%cpu --sort=-%cpu | head -n 6
+
+echo -e "\nTop 5 Memory Processes:"
+ps -e --format=pid,cmd,%mem --sort=-%mem | head -n 6
+
+
+
+Run the script after giving it executable permission.
