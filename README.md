@@ -13,3 +13,6 @@ https://roadmap.sh/projects/ssh-remote-server-setup
 
 Project URL 5:
 https://roadmap.sh/projects/static-site-server
+
+Project URL 6:
+https://roadmap.sh/projects/simple-monitoring-dashboard
