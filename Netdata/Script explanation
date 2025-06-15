@@ -22,7 +22,7 @@ echo "Netdata installed. Access it at http://$(hostname -I | awk '{print $1}'):1
 Prints the local IP address where the Netdata dashboard can be accessed in a browser.
 -----------------------------------------------------------------------------------------------
 
-`test_dashboard.sh` — Load Generator for Monitoring Test
+###`test_dashboard.sh` — Load Generator for Monitoring Test
 
 Simulate CPU, memory, and disk usage so you can **see live data on the Netdata dashboard** and verify that it's working.
 --------------------------------------------------------------------------------------------------------------------------
