@@ -154,10 +154,9 @@ ansible-playbook ec2_create.yml --vault-password-file vault.pass
 
 ## **5. Password-less SSH Setup**
 Check if SSH is enabled:
+
 ![image](https://github.com/user-attachments/assets/bd26a03f-8bae-4278-9ee3-6871d4510eba)
 
-### **Copy SSH Key to Instances**
-ssh-copy-id -i ~/.ssh/ubuntu.pub -o "IdentityFile=~/Downloads/ubuntu.pem" ubuntu@<PUBLIC_IP>
 
 ### **Test SSH Access**
 ssh -i ~/Downloads/ubuntu.pem ubuntu@<PUBLIC_IP>  # Should log in without password
