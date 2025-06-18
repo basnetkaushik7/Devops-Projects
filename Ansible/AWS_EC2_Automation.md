@@ -31,7 +31,9 @@ python3 -c "import boto3; print(boto3.__version__)"  # Should show version
 ### **Understanding `ansible.cfg` Settings**
 [defaults]
 inventory = ./inventory.ini         # Path to your inventory file
+
 private_key_file = ~/Downloads/ubuntu.pem  # Default SSH private key
+
 host_key_checking = False           # Disables SSH host key verification
 
 ### **1. `inventory = ./inventory.ini`**
