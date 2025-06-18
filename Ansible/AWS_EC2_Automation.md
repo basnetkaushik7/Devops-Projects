@@ -52,13 +52,16 @@ host_key_checking = False           # Disables SSH host key verification
 
 ### **Inventory File Structure**
 [linux_nodes]
+
 amazon-linux-1 ansible_host=13.233.132.246 ansible_user=ec2-user
 
 [ubuntu_nodes]
+
 ubuntu-node-1 ansible_host=13.235.94.92 ansible_user=ubuntu
 ubuntu-node-2 ansible_host=15.206.68.242 ansible_user=ubuntu
 
 [all:vars]
+
 ansible_ssh_private_key_file=~/Downloads/ubuntu.pem
 ansible_python_interpreter=/usr/bin/python3
 
